@@ -1,33 +1,57 @@
-import React, { useState } from 'react';
+import React, { useReducer } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
+import { nanoid } from 'nanoid';
+
+import { addContact } from 'redux/contacts.reducer';
+
 import css from './ContactForm.module.css';
 
-export const ContactForm = ({ handleSubmit }) => {
-  const [name, setName] = useState('');
-  const [number, setNumber] = useState('');
+export const ContactForm = () => {
+  const initialValue = { name: '', number: '' };
 
-  const handleChange = e => {
-    const { name, value } = e.target;
-    switch (name) {
+  const reducer = (state, action) => {
+    switch (action.type) {
       case 'name':
-        setName(value);
-        break;
+        return { ...state, name: action.payload };
       case 'number':
-        setNumber(value);
-        break;
+        return { ...state, number: action.payload };
+      case 'reset':
+        return initialValue;
       default:
-        return;
+        return state;
     }
+  };
+
+  const contacts = useSelector(state => state.contactsBook.contacts);
+  const dispatch = useDispatch();
+
+  const [{ name, number }, dispatchReducer] = useReducer(reducer, initialValue);
+
+  const handleInputChange = e => {
+    const { name, value } = e.target;
+    dispatchReducer({ type: name, payload: value });
+  };
+
+  const isNameInContacts = contactData => {
+    const hasDuplicates = contacts.some(
+      contact => contact.name.toLowerCase() === contactData.toLowerCase()
+    );
+
+    if (hasDuplicates) {
+      alert(`${contactData} is already in contacts.`);
+      return true;
+    }
+    return false;
   };
 
   const handleDataSubmit = e => {
     e.preventDefault();
-    handleSubmit({ name: name, number: number });
-    reset();
-  };
 
-  const reset = () => {
-    setName('');
-    setNumber('');
+    if (!isNameInContacts(name)) {
+      dispatch(addContact({ id: nanoid(), name, number }));
+      dispatchReducer({ type: 'reset', payload: initialValue });
+    }
   };
 
   return (
@@ -42,7 +66,7 @@ export const ContactForm = ({ handleSubmit }) => {
         required
         placeholder="Enter name"
         value={name}
-        onChange={handleChange}
+        onChange={handleInputChange}
       />
       <label className={css.formLabel}>Number </label>
       <input
@@ -54,7 +78,7 @@ export const ContactForm = ({ handleSubmit }) => {
         required
         placeholder="Enter phone number"
         value={number}
-        onChange={handleChange}
+        onChange={handleInputChange}
       />
       <button className={css.formBtn} type="submit">
         Add contact
