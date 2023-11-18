@@ -1,3 +1,5 @@
+import { createSlice } from '@reduxjs/toolkit';
+
 const localStContacts = [
   { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
   { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
@@ -10,65 +12,26 @@ const initialState = {
   filter: '',
 };
 
-export const contactsReducer = (state = initialState, action) => {
-  switch (action.type) {
-    case 'contacts/addContact': {
-      return {
-        ...state,
-        contacts: [...state.contacts, action.payload],
-      };
-    }
-    case 'contacts/deleteContact': {
-      return {
-        ...state,
-        contacts: state.contacts.filter(
-          contact => contact.id !== action.payload
-        ),
-      };
-    }
-    case 'contacts/filteredContact': {
-      return {
-        ...state,
-        contacts: state.contacts.filter(contact =>
-          contact.name.toLowerCase().includes(state.toLowerCase())
-        ),
-      };
-    }
-    default:
-      return state;
-  }
-};
+export const contactsSlice = createSlice({
+  name: 'contacts',
+  initialState,
 
-// import { createSlice } from '@reduxjs/toolkit';
+  reducers: {
+    addContact: (state, { payload }) => {
+      state.contacts.push(payload);
+    },
 
-// export const contactsSlice = createSlice({
-//   name: 'contacts',
-//   initialState: {
-//     value: [
-//       { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-//       { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-//       { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-//       { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-//     ],
-//     filter: '',
-//   },
+    deleteContact: (state, { payload }) => {
+      state.contacts = state.contacts.filter(({ id }) => id !== payload);
+    },
 
-//   reducers: {
-//     addContact: (state, { payload }) => {
-//       state.value.push(payload);
-//     },
+    filterContacts: (state, { payload }) => {
+      return { ...state, filter: payload };
+    },
+  },
+});
 
-//     deleteContact: (state, { payload }) => {
-//       state.value = state.value.filter(({ id }) => id !== payload);
-//     },
+export const { addContact, deleteContact, filterContacts } =
+  contactsSlice.actions;
 
-//     filterContacts: (state, { payload }) => {
-//       return { ...state, filter: payload };
-//     },
-//      },
-// });
-
-// export const { addContact, deleteContact, filterContacts } =
-//   contactsSlice.actions;
-
-// export default contactsSlice.reducer;
+export const contactsReducer = contactsSlice.reducer;

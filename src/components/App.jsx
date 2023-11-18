@@ -1,26 +1,24 @@
-import React, { useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+
 import { nanoid } from 'nanoid';
+
 import { ContactForm } from './ContactForm/ContactForm';
 import { Filter } from './Filter/Filter';
 import { ContactList } from './ContactList/ContactList';
-import { useDispatch, useSelector } from 'react-redux';
+import {
+  addContact,
+  deleteContact,
+  filterContacts,
+} from 'redux/contacts.reducer';
 
 export const App = () => {
   const dispatch = useDispatch();
   const contacts = useSelector(state => state.contactsBook.contacts);
   const filter = useSelector(state => state.contactsBook.filter);
 
-  useEffect(() => {
-    localStorage.setItem('contacts', JSON.stringify(contacts));
-  }, [contacts]);
-
-  const handleChange = e => {
-    const value = e.target.value;
-    const filteredContactsAction = {
-      type: 'contacts/filteredContacts',
-      payload: value,
-    };
-    dispatch(filteredContactsAction);
+  const handleChange = searchData => {
+    const value = searchData.target.value;
+    dispatch(filterContacts(value.toLowerCase().trim()));
   };
 
   const handleAddContact = contactData => {
@@ -36,20 +34,13 @@ export const App = () => {
       ...contactData,
       id: nanoid(),
     };
-    const addContactAction = {
-      type: 'contacts/addContact',
-      payload: finalContactsList,
-    };
-    dispatch(addContactAction);
+    dispatch(addContact(finalContactsList));
   };
 
   const handleDelete = id => {
-    const deleteContactAction = {
-      type: 'contacts/deleteContact',
-      payload: id,
-    };
-    dispatch(deleteContactAction);
+    dispatch(deleteContact(id));
   };
+
   const getFilteredContacts = () => {
     const filterContactsList = contacts.filter(contact => {
       return contact.name.toLowerCase().includes(filter.toLowerCase());
